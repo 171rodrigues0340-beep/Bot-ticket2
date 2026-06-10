@@ -41,6 +41,11 @@ const commands = [
             .setDescription('Texto/descrição da embed do painel.')
             .setMaxLength(4000)
         )
+      .addStringOption(opt =>
+  opt.setName('banner_url')
+    .setDescription('Link da imagem/banner do painel. Use "nenhum" para remover.')
+    .setMaxLength(1000)
+)
         .addStringOption(opt =>
           opt.setName('cor_embed')
             .setDescription('Cor da barrinha da embed. Exemplo: #ff0000')
