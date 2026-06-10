@@ -11,7 +11,8 @@ const DEFAULT_DB = {
     color: '#5865F2',
     buttonLabel: 'Abrir ticket',
     buttonEmoji: '🎫',
-    buttonStyle: 'Primary'
+    buttonStyle: 'Primary',
+bannerUrl: null
   },
   ids: {
     supportRoleId: null,
