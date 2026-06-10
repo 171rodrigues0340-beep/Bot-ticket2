@@ -34,7 +34,14 @@ const client = new Client({
 function validHexColor(value) {
   return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
 }
-
+function validHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 function cleanChannelName(name) {
   return name
     .toLowerCase()
@@ -54,7 +61,8 @@ function buildPanelPayload(db) {
     .setTitle(db.panel.title || '🎫 Atendimento')
     .setDescription(db.panel.description || 'Clique no botão abaixo para abrir um ticket.')
     .setColor(validHexColor(db.panel.color) ? db.panel.color : '#5865F2');
-
+if (db.panel.bannerUrl) embed.setImage(db.panel.bannerUrl);
+  
   const button = new ButtonBuilder()
     .setCustomId('ticket:create')
     .setLabel(db.panel.buttonLabel || 'Abrir ticket')
@@ -212,11 +220,17 @@ async function handleConfigCommand(interaction) {
   const buttonLabel = interaction.options.getString('texto_botao');
   const buttonEmoji = interaction.options.getString('emoji_botao');
   const buttonStyle = interaction.options.getString('cor_botao');
+  const bannerUrl = interaction.options.getString('banner_url');
   const supportRole = interaction.options.getRole('cargo_suporte');
   const ownerRole = interaction.options.getRole('cargo_dono');
   const logChannel = interaction.options.getChannel('canal_logs');
   const category = interaction.options.getChannel('categoria_tickets');
+const removeBanner = bannerUrl && ['nenhum', 'none', 'off', 'remover'].includes(bannerUrl.toLowerCase());
 
+if (bannerUrl && !removeBanner && !validHttpUrl(bannerUrl)) {
+  await interaction.reply({ content: '❌ O banner precisa ser um link válido começando com `http://` ou `https://`.', ephemeral: true });
+  return;
+}
   if (embedColor && !validHexColor(embedColor)) {
     await interaction.reply({ content: '❌ A cor da embed precisa estar no formato hexadecimal, exemplo: `#ff0000`.', ephemeral: true });
     return;
@@ -228,6 +242,7 @@ async function handleConfigCommand(interaction) {
   if (buttonLabel !== null) db.panel.buttonLabel = buttonLabel;
   if (buttonEmoji !== null) db.panel.buttonEmoji = ['nenhum', 'none', 'off', 'remover'].includes(buttonEmoji.toLowerCase()) ? null : buttonEmoji;
   if (buttonStyle !== null) db.panel.buttonStyle = buttonStyle;
+  if (bannerUrl !== null) db.panel.bannerUrl = removeBanner ? null : bannerUrl;
   if (supportRole) db.ids.supportRoleId = supportRole.id;
   if (ownerRole) db.ids.ownerRoleId = ownerRole.id;
   if (logChannel) db.ids.logChannelId = logChannel.id;
